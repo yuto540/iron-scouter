@@ -1,838 +1,297 @@
 <!DOCTYPE html>
-
 <html lang="ja">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IRON SCOUTER — 戦闘力測定器</title>
-<link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Rajdhani:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #06060a;
-  --surface: #0e0e18;
-  --surface2: #14141f;
-  --border: rgba(255,110,0,0.13);
-  --border2: rgba(255,255,255,0.05);
-  --orange: #ff6e00;
-  --orange2: #ffaa00;
-  --yellow: #ffe600;
-  --red: #ff2222;
-  --cyan: #00e5ff;
-  --green: #00ff88;
-  --text: #f0ece4;
-  --muted: rgba(240,236,228,0.42);
-  --muted2: rgba(240,236,228,0.18);
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IRON SCOUTER — 戦闘力測定器</title>
+    <meta name="google-adsense-account" content="ca-pub-6518093363642087">
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6518093363642087" crossorigin="anonymous"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Rajdhani:wght@300;400;600;700&family=Noto+Sans+JP:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #06060a;
+            --surface: #0e0e18;
+            --surface2: #14141f;
+            --border: rgba(255, 110, 0, 0.2);
+            --border2: rgba(255, 255, 255, 0.05);
+            --orange: #ff6e00;
+            --orange2: #ffaa00;
+            --yellow: #ffe600;
+            --red: #ff2222;
+            --text: #f0ece4;
+            --muted: rgba(240, 236, 228, 0.5);
+            --muted2: rgba(240, 236, 228, 0.2);
+        }
 
-*{box-sizing:border-box;margin:0;padding:0;}
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'Rajdhani', 'Noto Sans JP', sans-serif;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
 
-body {
-background: var(–bg);
-color: var(–text);
-font-family: ‘Rajdhani’,‘Noto Sans JP’,sans-serif;
-min-height: 100vh;
-overflow-x: hidden;
-}
+        /* 背景エフェクト */
+        .bg-fx {
+            position: fixed; inset: 0; pointer-events: none;
+            background: 
+                radial-gradient(ellipse 55% 45% at 15% 40%, rgba(255, 110, 0, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse 45% 55% at 85% 60%, rgba(0, 229, 255, 0.03) 0%, transparent 70%);
+            animation: bgp 6s ease-in-out infinite alternate;
+        }
+        @keyframes bgp { from { opacity: .5; } to { opacity: 1; } }
 
-body::after {
-content:’’;position:fixed;inset:0;
-background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,0,0,0.02) 3px,rgba(0,0,0,0.02) 4px);
-pointer-events:none;z-index:9999;
-}
+        nav {
+            border-bottom: 1px solid var(--border);
+            padding: 0 24px;
+            display: flex; align-items: center;
+            height: 60px;
+            background: rgba(6, 6, 10, 0.9);
+            backdrop-filter: blur(10px);
+            position: sticky; top: 0; z-index: 100;
+        }
 
-.bg-fx {
-position:fixed;inset:0;pointer-events:none;
-background:
-radial-gradient(ellipse 55% 45% at 15% 40%,rgba(255,110,0,0.06) 0%,transparent 70%),
-radial-gradient(ellipse 45% 55% at 85% 60%,rgba(0,229,255,0.03) 0%,transparent 70%),
-radial-gradient(ellipse 80% 30% at 50% 100%,rgba(255,110,0,0.04) 0%,transparent 60%);
-animation:bgp 6s ease-in-out infinite alternate;
-}
-@keyframes bgp{from{opacity:.5}to{opacity:1}}
+        .nav-logo {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 20px;
+            background: linear-gradient(135deg, var(--yellow), var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 0 8px rgba(255, 150, 0, 0.4));
+            margin-right: auto;
+        }
 
-/* ===== NAV ===== */
-nav {
-border-bottom:1px solid var(–border);
-padding:0 32px;
-display:flex;
-align-items:center;
-gap:0;
-height:56px;
-background:rgba(6,6,10,0.9);
-backdrop-filter:blur(8px);
-position:sticky;top:0;z-index:100;
-}
+        .nav-tabs { display: flex; height: 100%; }
+        .nav-tab {
+            height: 100%; padding: 0 20px;
+            display: flex; align-items: center;
+            font-size: 13px; font-weight: 700; color: var(--muted);
+            cursor: pointer; transition: 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-tab.active { color: var(--orange); border-bottom-color: var(--orange); }
 
-.nav-logo {
-font-family:‘Black Han Sans’,sans-serif;
-font-size:18px;
-background:linear-gradient(135deg,#ffe600,#ff6e00);
--webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-filter:drop-shadow(0 0 8px rgba(255,150,0,0.35));
-margin-right:auto;
-letter-spacing:0.05em;
-}
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        .page { display: none; animation: fadeIn 0.4s ease; }
+        .page.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
-.nav-tabs {
-display:flex;
-height:100%;
-}
+        .page-title {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: clamp(28px, 5vw, 48px);
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #fff, var(--orange));
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        }
 
-.nav-tab {
-height:100%;
-padding:0 24px;
-display:flex;align-items:center;
-font-size:12px;letter-spacing:0.2em;font-weight:600;
-color:var(–muted);cursor:pointer;
-border-bottom:2px solid transparent;
-transition:all 0.2s;
-text-transform:uppercase;
-font-family:‘Rajdhani’,sans-serif;
-}
-.nav-tab:hover{color:var(–text);}
-.nav-tab.active{color:var(–orange);border-bottom-color:var(–orange);}
+        .power-display {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 40px 20px;
+            text-align: center;
+            position: relative;
+            margin-bottom: 24px;
+        }
 
-/* ===== PAGES ===== */
-.page{display:none;animation:fadeIn 0.3s ease;}
-.page.active{display:block;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+        .power-num {
+            font-size: clamp(70px, 15vw, 120px);
+            font-weight: 800;
+            line-height: 1;
+            color: var(--text);
+            text-shadow: 0 0 20px var(--orange);
+            font-variant-numeric: tabular-nums;
+        }
 
-.container{max-width:860px;margin:0 auto;padding:48px 24px 80px;}
+        .rank-name-display {
+            font-family: 'Black Han Sans', sans-serif;
+            font-size: 24px;
+            margin-top: 10px;
+        }
 
-/* ===== HEADINGS ===== */
-.page-eyebrow{
-font-size:10px;letter-spacing:0.4em;color:var(–orange);
-text-transform:uppercase;font-weight:600;margin-bottom:10px;
-font-family:‘Rajdhani’,sans-serif;
-}
-.page-title{
-font-family:‘Black Han Sans’,sans-serif;
-font-size:clamp(32px,6vw,56px);line-height:1.05;
-background:linear-gradient(135deg,#ffe600 0%,#ff6e00 50%,#ff2222 100%);
--webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
-filter:drop-shadow(0 0 16px rgba(255,150,0,0.3));
-margin-bottom:8px;
-}
-.page-desc{font-size:13px;color:var(–muted);line-height:1.9;margin-bottom:40px;letter-spacing:0.03em;}
+        .calc-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+        @media (max-width: 768px) { .calc-grid { grid-template-columns: 1fr; } }
 
-/* ===== CALCULATOR ===== */
-.calc-grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:24px;
-} 
-<meta name="google-adsense-account" content="ca-pub-6518093363642087">
-<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6518093363642087"
-     crossorigin="anonymous"></script>
-@media(max-width:600px){.calc-grid{grid-template-columns:1fr;}}
+        .card { background: var(--surface); border: 1px solid var(--border2); padding: 24px; }
+        .card-title { font-size: 12px; color: var(--orange); font-weight: 700; margin-bottom: 20px; border-left: 3px solid var(--orange); padding-left: 10px; }
 
-.card{
-border:1px solid var(–border);
-background:var(–surface);
-padding:24px;
-position:relative;overflow:hidden;
-}
-.card::before{
-content:’’;position:absolute;inset:0;
-background:linear-gradient(135deg,rgba(255,110,0,0.03) 0%,transparent 60%);
-pointer-events:none;
-}
+        input {
+            width: 100%; background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border2);
+            color: #fff; padding: 12px;
+            font-family: 'Rajdhani', sans-serif; font-size: 18px;
+            outline: none;
+        }
+        input:focus { border-color: var(--orange); }
 
-.card-title{
-font-size:10px;letter-spacing:0.3em;color:var(–orange);
-text-transform:uppercase;font-weight:600;margin-bottom:20px;
-font-family:‘Rajdhani’,sans-serif;
-display:flex;align-items:center;gap:8px;
-}
-.card-title::before{content:‘▸’;font-size:8px;}
+        .lift-reps { display: grid; grid-template-columns: 1fr auto 1fr; gap: 10px; align-items: center; }
+        .rm-result { font-size: 12px; color: var(--orange2); margin-top: 8px; min-height: 1em; }
 
-.field{margin-bottom:16px;}
-.field:last-child{margin-bottom:0;}
+        .submit-area { display: flex; gap: 10px; margin-top: 20px; flex-wrap: wrap; }
+        .calc-btn {
+            flex: 2; background: var(--orange); color: #000;
+            border: none; padding: 16px; font-weight: 800; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; text-transform: uppercase;
+        }
+        .rank-only-btn { flex: 1; background: transparent; color: var(--muted); border: 1px solid var(--border2); cursor: pointer; }
 
-.field label{
-display:block;font-size:10px;letter-spacing:0.18em;
-color:var(–muted);text-transform:uppercase;margin-bottom:7px;
-font-family:‘Rajdhani’,sans-serif;font-weight:600;
-}
-
-.field-row{display:flex;gap:8px;align-items:flex-end;}
-
-.field input{
-width:100%;background:rgba(255,255,255,0.03);
-border:1px solid rgba(255,110,0,0.18);
-color:var(–text);font-family:‘Rajdhani’,sans-serif;
-font-size:20px;font-weight:600;padding:10px 12px 8px;
-letter-spacing:0.04em;outline:none;
-transition:border-color 0.2s,box-shadow 0.2s,background 0.2s;
--moz-appearance:textfield;
-}
-.field input::-webkit-outer-spin-button,
-.field input::-webkit-inner-spin-button{-webkit-appearance:none;}
-.field input:focus{
-border-color:var(–orange);background:rgba(255,110,0,0.04);
-box-shadow:0 0 0 1px rgba(255,110,0,0.18);
-}
-.field input::placeholder{color:var(–muted2);font-size:15px;}
-
-.field .unit{
-font-size:11px;color:var(–muted);letter-spacing:0.1em;
-padding:10px 10px 8px;border:1px solid rgba(255,110,0,0.18);
-border-left:none;background:rgba(255,255,255,0.02);
-white-space:nowrap;flex-shrink:0;font-family:‘Rajdhani’,sans-serif;
-font-weight:600;
-}
-
-/* Lift row: weight + reps */
-.lift-reps{
-display:grid;grid-template-columns:1fr auto 1fr;gap:6px;align-items:end;
-}
-.lift-sep{
-font-size:18px;color:var(–muted2);padding-bottom:10px;text-align:center;
-font-family:‘Rajdhani’,sans-serif;
-}
-.rm-result{
-font-size:11px;color:var(–orange2);letter-spacing:0.1em;
-margin-top:6px;font-family:‘Rajdhani’,sans-serif;font-weight:600;
-min-height:16px;
-}
-
-/* ===== POWER DISPLAY ===== */
-.power-display{
-grid-column:1/-1;
-border:1px solid var(–border);
-background:var(–surface);
-padding:32px;
-text-align:center;
-position:relative;overflow:hidden;
-}
-
-.power-display::before{
-content:’’;position:absolute;inset:0;
-background:radial-gradient(ellipse 80% 60% at 50% 100%,rgba(255,110,0,0.06) 0%,transparent 70%);
-pointer-events:none;
-}
-
-.corner{position:absolute;width:18px;height:18px;opacity:0.5;}
-.corner-tl{top:8px;left:8px;border-top:2px solid var(–orange);border-left:2px solid var(–orange);}
-.corner-tr{top:8px;right:8px;border-top:2px solid var(–orange);border-right:2px solid var(–orange);}
-.corner-bl{bottom:8px;left:8px;border-bottom:2px solid var(–orange);border-left:2px solid var(–orange);}
-.corner-br{bottom:8px;right:8px;border-bottom:2px solid var(–orange);border-right:2px solid var(–orange);}
-
-.power-num{
-font-family:‘Rajdhani’,sans-serif;font-weight:700;
-font-size:clamp(64px,15vw,112px);line-height:1;
-letter-spacing:-0.02em;
-text-shadow:0 0 24px var(–orange),0 0 48px rgba(255,110,0,0.35),0 0 80px rgba(255,110,0,0.15);
-font-variant-numeric:tabular-nums;
-transition:text-shadow 0.5s;
-}
-
-.power-num.burst{animation:numBurst 0.6s ease;}
-@keyframes numBurst{
-0%{transform:scale(0.94);filter:brightness(0.7);}
-40%{transform:scale(1.04);filter:brightness(1.3);}
-100%{transform:scale(1);filter:brightness(1);}
-}
-
-.rank-area{margin-top:16px;padding-top:16px;border-top:1px solid var(–border);}
-.rank-name-display{
-font-family:‘Black Han Sans’,sans-serif;
-font-size:clamp(20px,4vw,32px);letter-spacing:0.12em;
-transition:color 0.5s;
-margin-bottom:10px;
-}
-.rank-bar-wrap{height:3px;background:rgba(255,255,255,0.05);position:relative;overflow:hidden;max-width:400px;margin:0 auto;}
-.rank-bar{height:100%;background:linear-gradient(to right,var(–orange),var(–yellow));width:0%;transition:width 1s cubic-bezier(0.16,1,0.3,1);}
-.rank-bar::after{content:’’;position:absolute;right:0;top:0;width:24px;height:100%;background:linear-gradient(to right,transparent,white);filter:blur(3px);}
-
-/* Breakdown bars */
-.breakdown{margin-top:24px;text-align:left;max-width:500px;margin-left:auto;margin-right:auto;}
-.bd-row{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.bd-label{font-size:11px;color:var(–muted);width:100px;flex-shrink:0;letter-spacing:0.05em;font-family:‘Rajdhani’,sans-serif;font-weight:600;}
-.bd-bg{flex:1;height:3px;background:rgba(255,255,255,0.05);position:relative;overflow:hidden;}
-.bd-fill{height:100%;width:0%;transition:width 0.8s cubic-bezier(0.16,1,0.3,1);}
-.bd-val{font-size:12px;font-weight:600;font-family:‘Rajdhani’,sans-serif;width:56px;text-align:right;}
-
-/* Nickname + submit */
-.submit-area{
-grid-column:1/-1;
-display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;
-margin-top:4px;
-}
-
-.nick-input{
-flex:1;min-width:160px;
-background:rgba(255,255,255,0.03);
-border:1px solid rgba(255,110,0,0.18);
-color:var(–text);font-family:‘Rajdhani’,sans-serif;
-font-size:16px;font-weight:600;padding:12px 16px;
-outline:none;letter-spacing:0.05em;
-transition:border-color 0.2s;
-}
-.nick-input:focus{border-color:var(–orange);}
-.nick-input::placeholder{color:var(–muted2);}
-
-.calc-btn{
-padding:12px 28px;background:transparent;
-border:1px solid var(–orange);color:var(–orange);
-font-family:‘Rajdhani’,sans-serif;font-weight:700;
-font-size:14px;letter-spacing:0.15em;cursor:pointer;
-position:relative;overflow:hidden;transition:all 0.25s;
-text-transform:uppercase;white-space:nowrap;
-}
-.calc-btn::before{
-content:’’;position:absolute;inset:0;
-background:linear-gradient(135deg,var(–orange),var(–red));
-transform:translateX(-100%);transition:transform 0.25s;z-index:0;
-}
-.calc-btn:hover::before{transform:translateX(0);}
-.calc-btn:hover{color:#000;}
-.calc-btn span{position:relative;z-index:1;}
-
-.rank-only-btn{
-padding:12px 20px;background:transparent;
-border:1px solid var(–border2);color:var(–muted);
-font-family:‘Rajdhani’,sans-serif;font-size:13px;font-weight:600;
-letter-spacing:0.1em;cursor:pointer;transition:all 0.2s;white-space:nowrap;
-}
-.rank-only-btn:hover{border-color:var(–orange);color:var(–orange);}
-
-/* ===== RANKING PAGE ===== */
-.ranking-header{
-display:flex;align-items:flex-end;justify-content:space-between;
-margin-bottom:24px;flex-wrap:wrap;gap:12px;
-}
-
-.filter-row{display:flex;gap:8px;flex-wrap:wrap;}
-.filter-chip{
-padding:6px 14px;border:1px solid var(–border2);
-color:var(–muted);font-size:11px;letter-spacing:0.12em;
-cursor:pointer;transition:all 0.2s;font-family:‘Rajdhani’,sans-serif;font-weight:600;
-text-transform:uppercase;
-}
-.filter-chip:hover{border-color:var(–orange);color:var(–orange);}
-.filter-chip.active{border-color:var(–orange);color:var(–orange);background:rgba(255,110,0,0.08);}
-
-.rank-list{display:flex;flex-direction:column;gap:2px;}
-
-.rank-entry{
-display:grid;
-grid-template-columns:48px 1fr auto auto;
-align-items:center;gap:16px;
-padding:14px 20px;
-border:1px solid var(–border2);
-background:var(–surface);
-transition:background 0.2s,border-color 0.2s;
-position:relative;overflow:hidden;
-}
-.rank-entry:hover{background:var(–surface2);border-color:var(–border);}
-.rank-entry.me{border-color:rgba(255,110,0,0.35);background:rgba(255,110,0,0.05);}
-.rank-entry.top1{border-color:rgba(255,230,0,0.4);}
-.rank-entry.top2{border-color:rgba(200,200,200,0.3);}
-.rank-entry.top3{border-color:rgba(205,127,50,0.35);}
-
-.rank-entry::before{
-content:’’;position:absolute;left:0;top:0;bottom:0;width:3px;
-background:transparent;transition:background 0.2s;
-}
-.rank-entry.top1::before{background:#ffe600;}
-.rank-entry.top2::before{background:#c0c0c0;}
-.rank-entry.top3::before{background:#cd7f32;}
-.rank-entry.me::before{background:var(–orange);}
-
-.re-pos{
-font-family:‘Rajdhani’,sans-serif;font-weight:700;
-font-size:20px;color:var(–muted2);text-align:center;
-}
-.re-pos.gold{color:#ffe600;text-shadow:0 0 8px rgba(255,230,0,0.5);}
-.re-pos.silver{color:#c0c0c0;}
-.re-pos.bronze{color:#cd7f32;}
-
-.re-info{}
-.re-nick{font-family:‘Rajdhani’,sans-serif;font-weight:700;font-size:16px;letter-spacing:0.05em;}
-.re-rank-name{font-size:11px;color:var(–muted);letter-spacing:0.08em;margin-top:2px;}
-
-.re-power{
-font-family:‘Rajdhani’,sans-serif;font-weight:700;
-font-size:22px;letter-spacing:-0.01em;
-text-align:right;
-}
-
-.re-date{font-size:10px;color:var(–muted2);text-align:right;margin-top:2px;letter-spacing:0.05em;}
-
-.empty-state{
-text-align:center;padding:60px 24px;
-color:var(–muted);font-size:14px;letter-spacing:0.08em;
-border:1px dashed var(–border2);
-}
-
-/* ===== RANK TABLE ===== */
-.rank-ref{margin-top:48px;}
-.rank-ref-title{font-size:10px;letter-spacing:0.3em;color:var(–muted);text-transform:uppercase;font-family:‘Rajdhani’,sans-serif;font-weight:600;margin-bottom:16px;}
-.rank-ref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:2px;}
-.rank-ref-item{
-padding:10px 14px;border:1px solid var(–border2);background:var(–surface);
-display:flex;align-items:center;gap:10px;
-}
-.rri-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-.rri-name{font-family:‘Rajdhani’,sans-serif;font-weight:600;font-size:13px;flex:1;}
-.rri-range{font-size:10px;color:var(–muted);letter-spacing:0.05em;}
-
-/* toast */
-.toast{
-position:fixed;bottom:32px;left:50%;transform:translateX(-50%) translateY(20px);
-background:var(–surface2);border:1px solid var(–orange);
-padding:12px 24px;font-size:13px;letter-spacing:0.08em;
-opacity:0;transition:all 0.3s;pointer-events:none;z-index:9000;
-font-family:‘Rajdhani’,sans-serif;font-weight:600;
-}
-.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-</style>
-
+        .rank-entry {
+            display: grid; grid-template-columns: 50px 1fr auto;
+            background: var(--surface); padding: 15px;
+            margin-bottom: 4px; align-items: center;
+        }
+        .toast {
+            position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--orange); color: #000; padding: 10px 30px;
+            font-weight: 700; border-radius: 4px; display: none; z-index: 10000;
+        }
+    </style>
 </head>
 <body>
+
 <div class="bg-fx"></div>
 
 <nav>
-  <div class="nav-logo">⚡ IRON SCOUTER</div>
-  <div class="nav-tabs">
-    <div class="nav-tab active" onclick="showPage('calc')">計測</div>
-    <div class="nav-tab" onclick="showPage('ranking')">ランキング</div>
-  </div>
+    <div class="nav-logo">⚡ IRON SCOUTER</div>
+    <div class="nav-tabs">
+        <div class="nav-tab active" id="tab-calc" onclick="showPage('calc')">計測</div>
+        <div class="nav-tab" id="tab-ranking" onclick="showPage('ranking')">ランキング</div>
+    </div>
 </nav>
 
-<!-- ===== CALC PAGE ===== -->
-
-<div class="page active" id="page-calc">
 <div class="container">
-  <div class="page-eyebrow">▲ Battle Power Scanner</div>
-  <div class="page-title">戦闘力を計測せよ</div>
-  <div class="page-desc">BIG3の最大重量（または重量×回数）と基本スペックを入力。<br>体重比・RM換算・指数評価であなたの真の戦闘力を算出する。</div>
+    <div class="page active" id="page-calc">
+        <h1 class="page-title">戦闘力を計測せよ</h1>
+        <div class="power-display">
+            <div class="power-num" id="power-num">0</div>
+            <div class="rank-name-display" id="rank-name-display">計測待機中</div>
+        </div>
 
-  <div class="calc-grid">
+        <div class="calc-grid">
+            <div class="card">
+                <div class="card-title">基本スペック</div>
+                <div class="field"><label>体重 (kg)</label><input type="number" id="weight" oninput="onInput()"></div>
+                <div class="field"><label>トレーニング歴 (年)</label><input type="number" id="years" step="0.5" oninput="onInput()"></div>
+            </div>
 
-```
-<!-- Power display -->
-<div class="power-display">
-  <div class="corner corner-tl"></div><div class="corner corner-tr"></div>
-  <div class="corner corner-bl"></div><div class="corner corner-br"></div>
-  <div class="power-num" id="power-num">???</div>
-  <div class="rank-area">
-    <div class="rank-name-display" id="rank-name-display">計測待機中</div>
-    <div class="rank-bar-wrap"><div class="rank-bar" id="rank-bar"></div></div>
-    <div class="breakdown" id="breakdown" style="display:none">
-      <div class="bd-row">
-        <div class="bd-label">ベンチプレス</div>
-        <div class="bd-bg"><div class="bd-fill" id="bd-bench" style="background:#ff6e00"></div></div>
-        <div class="bd-val" id="bdv-bench" style="color:#ff6e00">—</div>
-      </div>
-      <div class="bd-row">
-        <div class="bd-label">スクワット</div>
-        <div class="bd-bg"><div class="bd-fill" id="bd-squat" style="background:#ffaa00"></div></div>
-        <div class="bd-val" id="bdv-squat" style="color:#ffaa00">—</div>
-      </div>
-      <div class="bd-row">
-        <div class="bd-label">デッドリフト</div>
-        <div class="bd-bg"><div class="bd-fill" id="bd-dead" style="background:#ffe600"></div></div>
-        <div class="bd-val" id="bdv-dead" style="color:#ffe600">—</div>
-      </div>
+            <div class="card">
+                <div class="card-title">BIG3実績</div>
+                <div class="field">
+                    <label>ベンチプレス</label>
+                    <div class="lift-reps"><input type="number" id="bench-kg" oninput="onLift('bench')"><span>×</span><input type="number" id="bench-reps" oninput="onLift('bench')"></div>
+                    <div class="rm-result" id="rm-bench"></div>
+                </div>
+                <div class="field">
+                    <label>スクワット</label>
+                    <div class="lift-reps"><input type="number" id="squat-kg" oninput="onLift('squat')"><span>×</span><input type="number" id="squat-reps" oninput="onLift('squat')"></div>
+                    <div class="rm-result" id="rm-squat"></div>
+                </div>
+                <div class="field">
+                    <label>デッドリフト</label>
+                    <div class="lift-reps"><input type="number" id="dead-kg" oninput="onLift('dead')"><span>×</span><input type="number" id="dead-reps" oninput="onLift('dead')"></div>
+                    <div class="rm-result" id="rm-dead"></div>
+                </div>
+            </div>
+
+            <div class="submit-area">
+                <input type="text" id="nickname" placeholder="ニックネーム" style="flex: 1;">
+                <button class="calc-btn" onclick="calcAndRegister()">⚡ 計測 ＆ 登録</button>
+            </div>
+        </div>
     </div>
-  </div>
-</div>
 
-<!-- Basic info -->
-<div class="card">
-  <div class="card-title">基本スペック</div>
-  <div class="field">
-    <label>体重</label>
-    <div class="field-row">
-      <input type="number" id="weight" placeholder="75" min="30" max="300" oninput="onInput()">
-      <div class="unit">kg</div>
+    <div class="page" id="page-ranking">
+        <h1 class="page-title">世界順位</h1>
+        <div id="rank-list"></div>
     </div>
-  </div>
-  <div class="field">
-    <label>身長</label>
-    <div class="field-row">
-      <input type="number" id="height" placeholder="175" min="100" max="250" oninput="onInput()">
-      <div class="unit">cm</div>
-    </div>
-  </div>
-  <div class="field">
-    <label>トレーニング歴</label>
-    <div class="field-row">
-      <input type="number" id="years" placeholder="3" min="0" max="50" step="0.5" oninput="onInput()">
-      <div class="unit">年</div>
-    </div>
-  </div>
 </div>
-
-<!-- Lifts -->
-<div class="card">
-  <div class="card-title">BIG3（重量 × 回数、または1RM）</div>
-
-  <div class="field">
-    <label>ベンチプレス</label>
-    <div class="lift-reps">
-      <div class="field-row">
-        <input type="number" id="bench-kg" placeholder="100" min="0" max="500" oninput="onLift('bench')">
-        <div class="unit">kg</div>
-      </div>
-      <div class="lift-sep">×</div>
-      <div class="field-row">
-        <input type="number" id="bench-reps" placeholder="1" min="1" max="30" oninput="onLift('bench')">
-        <div class="unit">回</div>
-      </div>
-    </div>
-    <div class="rm-result" id="rm-bench"></div>
-  </div>
-
-  <div class="field">
-    <label>スクワット</label>
-    <div class="lift-reps">
-      <div class="field-row">
-        <input type="number" id="squat-kg" placeholder="120" min="0" max="600" oninput="onLift('squat')">
-        <div class="unit">kg</div>
-      </div>
-      <div class="lift-sep">×</div>
-      <div class="field-row">
-        <input type="number" id="squat-reps" placeholder="1" min="1" max="30" oninput="onLift('squat')">
-        <div class="unit">回</div>
-      </div>
-    </div>
-    <div class="rm-result" id="rm-squat"></div>
-  </div>
-
-  <div class="field">
-    <label>デッドリフト</label>
-    <div class="lift-reps">
-      <div class="field-row">
-        <input type="number" id="dead-kg" placeholder="140" min="0" max="700" oninput="onLift('dead')">
-        <div class="unit">kg</div>
-      </div>
-      <div class="lift-sep">×</div>
-      <div class="field-row">
-        <input type="number" id="dead-reps" placeholder="1" min="1" max="30" oninput="onLift('dead')">
-        <div class="unit">回</div>
-      </div>
-    </div>
-    <div class="rm-result" id="rm-dead"></div>
-  </div>
-</div>
-
-<!-- Submit -->
-<div class="submit-area">
-  <input type="text" class="nick-input" id="nickname" placeholder="ニックネーム（ランキング登録用・任意）" maxlength="20">
-  <button class="calc-btn" onclick="calcAndRegister()"><span>⚡ 計測 &amp; ランキング登録</span></button>
-  <button class="rank-only-btn" onclick="calcOnly()">登録せずに計測</button>
-</div>
-```
-
-  </div>
-
-  <!-- Rank reference -->
-
-  <div class="rank-ref">
-    <div class="rank-ref-title">■ 戦闘力ランク一覧</div>
-    <div class="rank-ref-grid" id="rank-ref-grid"></div>
-  </div>
-
-</div>
-</div>
-
-<!-- ===== RANKING PAGE ===== -->
-
-<div class="page" id="page-ranking">
-<div class="container">
-  <div class="page-eyebrow">▲ Global Power Rankings</div>
-  <div class="page-title">戦闘力ランキング</div>
-  <div class="page-desc">全戦士の戦闘力を比較せよ。お前は世界で何番目に強いのか。</div>
-
-  <div class="ranking-header">
-    <div class="filter-row">
-      <div class="filter-chip active" onclick="setFilter('all',this)">全員</div>
-      <div class="filter-chip" onclick="setFilter('week',this)">今週</div>
-      <div class="filter-chip" onclick="setFilter('month',this)">今月</div>
-    </div>
-    <div style="font-size:11px;color:var(--muted);letter-spacing:0.1em;font-family:'Rajdhani',sans-serif;" id="entry-count">— 件登録</div>
-  </div>
-
-  <div class="rank-list" id="rank-list"></div>
-
-</div>
-</div>
-
-<!-- Toast -->
 
 <div class="toast" id="toast"></div>
 
 <script>
-// ===== RANKS =====
-const RANKS = [
-  { min:0,      max:499,    name:"修行前の凡人",    color:"#555" },
-  { min:500,    max:1499,   name:"目覚めし者",      color:"#888" },
-  { min:1500,   max:3499,   name:"鋼の戦士",        color:"#4fc3f7" },
-  { min:3500,   max:6999,   name:"鉄の化身",        color:"#29b6f6" },
-  { min:7000,   max:11999,  name:"不動の猛者",      color:"#26c6da" },
-  { min:12000,  max:19999,  name:"覚醒の鉄人",      color:"#66bb6a" },
-  { min:20000,  max:34999,  name:"伝説の怪力士",    color:"#ffca28" },
-  { min:35000,  max:59999,  name:"神話の肉体",      color:"#ffa726" },
-  { min:60000,  max:Infinity,name:"宇宙最強の鋼",   color:"#ff5722" },
-];
-const RANK_COLORS = RANKS.map(r=>r.color);
+    // --- 既存のロジック ---
+    const RANKS = [
+        { min: 0, max: 999, name: "修行前の凡人", color: "#888" },
+        { min: 1000, max: 4999, name: "目覚めし者", color: "#4fc3f7" },
+        { min: 5000, max: 14999, name: "鋼の戦士", color: "#66bb6a" },
+        { min: 15000, max: 29999, name: "鉄の化身", color: "#ffca28" },
+        { min: 30000, max: 59999, name: "伝説の怪力士", color: "#ffa726" },
+        { min: 60000, max: Infinity, name: "宇宙最強の鋼", color: "#ff2222" }
+    ];
 
-// ===== EPLEY RM =====
-function epley(kg, reps) {
-  if (!kg || kg <= 0) return null;
-  reps = reps || 1;
-  if (reps === 1) return kg;
-  return Math.round(kg * (1 + reps / 30));
-}
+    let rm = { bench: 0, squat: 0, dead: 0 };
 
-// ===== EXPONENTIAL SCORING =====
-// baseline: typical 1RM / bodyweight ratio for each lift
-// bench baseline ~1.0x, squat ~1.4x, dead ~1.7x (intermediate male)
-function liftScore(rm1, bodyweight, baseline, weight) {
-  if (!rm1 || !bodyweight || bodyweight <= 0) return 0;
-  const ratio = rm1 / bodyweight;
-  // Deviation from baseline
-  const dev = ratio / baseline; // 1.0 = exactly baseline
-  // Exponential scoring: score = weight * dev^2.8
-  // dev < 1 → below average, dev > 1 → above average (rewards strongly)
-  const raw = weight * Math.pow(Math.max(dev, 0.01), 2.8);
-  return Math.round(raw);
-}
+    function epley(kg, reps) {
+        if (!kg || kg <= 0) return 0;
+        return reps > 1 ? Math.round(kg * (1 + reps / 30)) : kg;
+    }
 
-// ===== COMPUTE POWER =====
-function computePower(bw, bench1rm, squat1rm, dead1rm, years) {
-  if (!bw || bw <= 0) return null;
-  if (!bench1rm && !squat1rm && !dead1rm) return null;
+    function onLift(name) {
+        const kg = parseFloat(document.getElementById(`${name}-kg`).value) || 0;
+        const reps = parseFloat(document.getElementById(`${name}-reps`).value) || 1;
+        rm[name] = epley(kg, reps);
+        document.getElementById(`rm-${name}`).textContent = rm[name] > 0 ? `推定1RM: ${rm[name]}kg` : '';
+        onInput();
+    }
 
-  const bs = liftScore(bench1rm, bw, 1.0,  3000);
-  const ss = liftScore(squat1rm, bw, 1.4,  3500);
-  const ds = liftScore(dead1rm,  bw, 1.7,  4000);
+    function onInput() {
+        const bw = parseFloat(document.getElementById('weight').value) || 0;
+        const years = parseFloat(document.getElementById('years').value) || 0;
+        if (bw > 0 && (rm.bench || rm.squat || rm.dead)) {
+            const total = Math.round(((rm.bench/bw)*3000 + (rm.squat/(bw*1.4))*3500 + (rm.dead/(bw*1.7))*4000) * (1+Math.min(years*0.1, 1.0)));
+            updateDisplay(total);
+        }
+    }
 
-  const expMult = 1 + Math.min((years||0) * 0.10, 1.2);
-  const total = Math.round((bs + ss + ds) * expMult);
+    function updateDisplay(power) {
+        const el = document.getElementById('power-num');
+        el.textContent = power.toLocaleString();
+        const rank = RANKS.find(r => power >= r.min && power <= r.max) || RANKS[0];
+        const rankEl = document.getElementById('rank-name-display');
+        rankEl.textContent = rank.name;
+        rankEl.style.color = rank.color;
+        el.style.textShadow = `0 0 20px ${rank.color}`;
+    }
 
-  return { total, bs, ss, ds };
-}
+    function showPage(id) {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.getElementById(`page-${id}`).classList.add('active');
+        document.getElementById(`tab-${id}`).classList.add('active');
+        if(id === 'ranking') renderRanking();
+    }
 
-function getRank(power) {
-  return RANKS.find(r => power >= r.min && power <= r.max) || RANKS[0];
-}
+    function saveEntry(nick, power) {
+        const entries = JSON.parse(localStorage.getItem('iron_scouter_v1') || '[]');
+        entries.push({ nick, power, ts: Date.now() });
+        entries.sort((a, b) => b.power - a.power);
+        localStorage.setItem('iron_scouter_v1', JSON.stringify(entries.slice(0, 50)));
+    }
 
-// ===== UI =====
-let rm = { bench: null, squat: null, dead: null };
+    function renderRanking() {
+        const entries = JSON.parse(localStorage.getItem('iron_scouter_v1') || '[]');
+        const list = document.getElementById('rank-list');
+        list.innerHTML = entries.length === 0 ? '<p style="text-align:center; color:var(--muted);">データなし</p>' : 
+            entries.map((e, i) => `<div class="rank-entry"><div>#${i+1}</div><div><b>${e.nick}</b></div><div style="color:var(--orange); font-weight:800;">${e.power.toLocaleString()}</div></div>`).join('');
+    }
 
-function getNum(id) {
-  const v = parseFloat(document.getElementById(id).value);
-  return isNaN(v) ? null : v;
-}
+    function calcAndRegister() {
+        const power = parseInt(document.getElementById('power-num').textContent.replace(/,/g, ''));
+        const nick = document.getElementById('nickname').value.trim();
+        if (!nick || power <= 0) return alert('入力不足です');
+        saveEntry(nick, power);
+        showToast(`登録完了！`);
+    }
 
-function onLift(name) {
-  const kg   = getNum(`${name}-kg`);
-  const reps = getNum(`${name}-reps`);
-  const rm1  = epley(kg, reps || 1);
-  rm[name] = rm1;
-
-  const el = document.getElementById(`rm-${name}`);
-  if (rm1 && reps && reps > 1) {
-    el.textContent = `推定1RM: ${rm1} kg`;
-  } else {
-    el.textContent = '';
-  }
-  onInput();
-}
-
-function onInput() {
-  const bw    = getNum('weight');
-  const years = getNum('years');
-  const result = computePower(bw, rm.bench, rm.squat, rm.dead, years);
-  if (!result) return;
-  renderPower(result, false);
-}
-
-function renderPower(result, burst) {
-  const { total, bs, ss, ds } = result;
-
-  // Animate number
-  const el = document.getElementById('power-num');
-  const prev = parseInt(el.textContent.replace(/,/g,'')) || 0;
-  animNum(prev, total, el, burst ? 800 : 400);
-
-  if (burst) {
-    el.classList.remove('burst');
-    void el.offsetWidth;
-    el.classList.add('burst');
-    setTimeout(()=>el.classList.remove('burst'), 700);
-  }
-
-  const rank = getRank(total);
-  const rn = document.getElementById('rank-name-display');
-  rn.textContent = rank.name;
-  rn.style.color = rank.color;
-
-  // Bar
-  const idx = RANKS.indexOf(rank);
-  const range = rank.max === Infinity ? rank.min*2 : rank.max - rank.min;
-  const pos = (total - rank.min) / range;
-  const pct = ((idx + Math.min(pos,1)) / RANKS.length) * 100;
-  document.getElementById('rank-bar').style.width = pct + '%';
-
-  // Breakdown
-  document.getElementById('breakdown').style.display = 'block';
-  const maxScore = Math.max(bs, ss, ds, 1);
-  setTimeout(()=>{
-    document.getElementById('bd-bench').style.width = (bs/maxScore*100)+'%';
-    document.getElementById('bd-squat').style.width = (ss/maxScore*100)+'%';
-    document.getElementById('bd-dead').style.width  = (ds/maxScore*100)+'%';
-    document.getElementById('bdv-bench').textContent = bs.toLocaleString();
-    document.getElementById('bdv-squat').textContent = ss.toLocaleString();
-    document.getElementById('bdv-dead').textContent  = ds.toLocaleString();
-  }, 50);
-}
-
-function animNum(from, to, el, dur) {
-  const start = performance.now();
-  function step(now) {
-    const t = Math.min((now-start)/dur, 1);
-    const e = 1 - Math.pow(1-t, 3);
-    el.textContent = Math.round(from + (to-from)*e).toLocaleString();
-    if (t < 1) requestAnimationFrame(step);
-    else el.textContent = to.toLocaleString();
-  }
-  requestAnimationFrame(step);
-}
-
-function calcAndRegister() {
-  const result = getResult();
-  if (!result) { showToast('数値を入力してください'); return; }
-  renderPower(result, true);
-
-  const nick = document.getElementById('nickname').value.trim();
-  if (!nick) { showToast('ランキング登録にはニックネームが必要です'); return; }
-
-  saveEntry(nick, result.total);
-  showToast(`「${nick}」で登録完了！戦闘力 ${result.total.toLocaleString()}`);
-}
-
-function calcOnly() {
-  const result = getResult();
-  if (!result) { showToast('数値を入力してください'); return; }
-  renderPower(result, true);
-}
-
-function getResult() {
-  const bw    = getNum('weight');
-  const years = getNum('years');
-  return computePower(bw, rm.bench, rm.squat, rm.dead, years);
-}
-
-// ===== STORAGE =====
-const STORAGE_KEY = 'iron_scouter_v1';
-
-function loadEntries() {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-  catch { return []; }
-}
-
-function saveEntry(nick, power) {
-  const entries = loadEntries();
-  entries.push({ nick, power, ts: Date.now() });
-  // Keep top 200 + recent 50
-  entries.sort((a,b)=>b.power-a.power);
-  const top = entries.slice(0,200);
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(top)); } catch{}
-}
-
-// ===== RANKING PAGE =====
-let currentFilter = 'all';
-
-function setFilter(f, el) {
-  currentFilter = f;
-  document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active'));
-  el.classList.add('active');
-  renderRanking();
-}
-
-function renderRanking() {
-  let entries = loadEntries();
-  const now = Date.now();
-
-  if (currentFilter === 'week')  entries = entries.filter(e => now - e.ts < 7*86400000);
-  if (currentFilter === 'month') entries = entries.filter(e => now - e.ts < 30*86400000);
-
-  entries.sort((a,b)=>b.power-a.power);
-
-  document.getElementById('entry-count').textContent = `${entries.length} 件登録`;
-
-  const list = document.getElementById('rank-list');
-  if (!entries.length) {
-    list.innerHTML = '<div class="empty-state">まだ登録者がいない。<br>最初の戦士になれ。</div>';
-    return;
-  }
-
-  list.innerHTML = entries.map((e,i)=>{
-    const rank = getRank(e.power);
-    const pos = i+1;
-    const posClass = pos===1?'gold':pos===2?'silver':pos===3?'bronze':'';
-    const entryClass = pos<=3?`top${pos}`:'';
-    const posSymbol = pos===1?'👑':pos===2?'🥈':pos===3?'🥉':pos;
-    const date = new Date(e.ts);
-    const dateStr = `${date.getMonth()+1}/${date.getDate()}`;
-
-    return `
-      <div class="rank-entry ${entryClass}">
-        <div class="re-pos ${posClass}">${posSymbol}</div>
-        <div class="re-info">
-          <div class="re-nick">${escHtml(e.nick)}</div>
-          <div class="re-rank-name" style="color:${rank.color}">${rank.name}</div>
-        </div>
-        <div>
-          <div class="re-power" style="color:${rank.color};text-shadow:0 0 10px ${rank.color}66">${e.power.toLocaleString()}</div>
-          <div class="re-date">${dateStr}</div>
-        </div>
-      </div>
-    `;
-  }).join('');
-}
-
-function escHtml(s) {
-  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-// ===== RANK REF =====
-function buildRankRef() {
-  const grid = document.getElementById('rank-ref-grid');
-  grid.innerHTML = RANKS.map(r=>`
-    <div class="rank-ref-item">
-      <div class="rri-dot" style="background:${r.color};box-shadow:0 0 6px ${r.color}88"></div>
-      <div class="rri-name" style="color:${r.color}">${r.name}</div>
-      <div class="rri-range">${r.max===Infinity?r.min.toLocaleString()+'+':`${r.min.toLocaleString()}〜${r.max.toLocaleString()}`}</div>
-    </div>
-  `).join('');
-}
-
-// ===== NAV =====
-function showPage(id) {
-  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
-  document.getElementById('page-'+id).classList.add('active');
-  event.currentTarget.classList.add('active');
-  if (id==='ranking') renderRanking();
-}
-
-// ===== TOAST =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2800);
-}
-
-// ===== INIT =====
-buildRankRef();
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = msg; t.style.display = 'block';
+        setTimeout(() => t.style.display = 'none', 3000);
+    }
 </script>
-
 </body>
-</html> 
+</html>
